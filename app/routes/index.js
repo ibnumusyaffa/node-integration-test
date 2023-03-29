@@ -1,8 +1,8 @@
 module.exports = (app) => {
   const router = require('express').Router();
-  const user = require('../controllers/user.controller');
+  const userController = require('../controllers/userController');
 
-  router.get('/', user.detail);
+  router.get('/', userController.list);
 
   app.use(router);
 };

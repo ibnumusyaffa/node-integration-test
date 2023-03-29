@@ -1,31 +1,60 @@
-const dotenv = require('dotenv')
-dotenv.config()
-module.exports = {
+const dotenv = require('dotenv');
+dotenv.config();
+
+const migrations = {
+  tableName: 'migrations',
+  directory: './database/migrations',
+};
+const seeds = {
+  directory: './database/seeders',
+};
+const pool = {
+  max: 100,
+  min: 2,
+  acquireTimeoutMillis: 300000,
+  idleTimeoutMillis: 30000,
+};
+
+const config = {
   development: {
-    username: process.env.DEV_DB_USERNAME,
-    password: process.env.DEV_DB_PASSWORD,
-    database: process.env.DEV_DB_DATABASE,
-    host: process.env.DEV_DB_HOST,
-    post: process.env.DEV_DB_PORT,
-    dialect: process.env.DEV_DB_DIALECT,
-    logging: false,
+    client: 'mysql2',
+    connection: {
+      user: process.env.DEV_DB_USER,
+      password: process.env.DEV_DB_PASSWORD,
+      database: process.env.DEV_DB_DATABASE,
+      host: process.env.DEV_DB_HOST,
+      port: process.env.DEV_DB_PORT,
+    },
+    pool,
+    migrations,
+    seeds,
   },
   test: {
-    username: process.env.TEST_DB_USERNAME,
-    password: process.env.TEST_DB_PASSWORD,
-    database: process.env.TEST_DB_DATABASE,
-    host: process.env.TEST_DB_HOST,
-    post: process.env.TEST_DB_PORT,
-    dialect: process.env.TEST_DB_DIALECT,
-    logging: false,
+    client: 'mysql2',
+    connection: {
+      user: process.env.TEST_DB_USER,
+      password: process.env.TEST_DB_PASSWORD,
+      database: process.env.TEST_DB_DATABASE,
+      host: process.env.TEST_DB_HOST,
+      port: process.env.TEST_DB_PORT,
+    },
+    pool,
+    migrations,
+    seeds,
   },
   production: {
-    username: process.env.PROD_DB_USERNAME,
-    password: process.env.PROD_DB_PASSWORD,
-    database: process.env.PROD_DB_DATABASE,
-    host: process.env.PROD_DB_HOST,
-    post: process.env.PROD_DB_PORT,
-    dialect: process.env.PROD_DB_DIALECT,
-    logging: false,
+    client: 'mysql2',
+    connection: {
+      user: process.env.PROD_DB_USER,
+      password: process.env.PROD_DB_PASSWORD,
+      database: process.env.PROD_DB_DATABASE,
+      host: process.env.PROD_DB_HOST,
+      port: process.env.PROD_DB_PORT,
+    },
+    pool,
+    migrations,
+    seeds,
   },
-}
+};
+
+module.exports = config;

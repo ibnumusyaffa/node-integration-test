@@ -14,5 +14,5 @@ module.exports = {
       { vars: 'all', args: 'none', varsIgnorePattern: '^_' },
     ],
   },
-  ignorePatterns: ['tests'],
+  ignorePatterns: ['test'],
 };
