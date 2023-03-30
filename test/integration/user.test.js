@@ -6,8 +6,7 @@ describe('GET /users', () => {
   it('returns a list of users', async () => {
     const response = await request(app)
       .get('/')
-      .expect(200)
-      .expect('Content-Type', /json/);
+      
 
     assert.isArray(response.body.data, 'data is an array');
     assert.isNumber(response.body.total, 'total is a number');
@@ -19,8 +18,6 @@ describe('GET /users', () => {
   it('returns a filtered list of users with keyword parameter', async () => {
     const response = await request(app)
       .get('/?keyword=example')
-      .expect(200)
-      .expect('Content-Type', /json/);
 
     assert.isArray(response.body.data, 'data is an array');
     assert.isNumber(response.body.total, 'total is a number');

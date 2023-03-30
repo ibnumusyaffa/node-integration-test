@@ -35,9 +35,9 @@
     "mysql2": "^3.2.0"
   },
   "devDependencies": {
-    "chai": "^4.3.7",
     "@faker-js/faker": "^7.6.0",
     "@jackfranklin/test-data-bot": "^2.1.0",
+    "chai": "^4.3.7",
     "cross-env": "^7.0.3",
     "eslint": "^8.37.0",
     "eslint-config-prettier": "^8.8.0",

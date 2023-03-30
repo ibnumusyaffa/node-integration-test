@@ -1,5 +1,5 @@
 const knex = require('../../app/database');
-async function truncateTables() {
+async function truncateAllTables() {
   try {
     await knex.schema.raw('SET FOREIGN_KEY_CHECKS = 0');
 
@@ -11,6 +11,25 @@ async function truncateTables() {
     const truncatePromises = [];
     for (const tableName of tableNames) {
       truncatePromises.push(knex(tableName).truncate());
+    }
+
+    await Promise.all(truncatePromises);
+    await knex.schema.raw('SET FOREIGN_KEY_CHECKS = 1');
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function dropAllTables() {
+  try {
+    await knex.schema.raw('SET FOREIGN_KEY_CHECKS = 0');
+
+    const tables = await knex.raw('SHOW TABLES');
+    const tableNames = tables[0].map((table) => Object.values(table)[0]);
+
+    const truncatePromises = [];
+    for (const tableName of tableNames) {
+      truncatePromises.push(knex.schema.dropTableIfExists(tableName));
     }
 
     await Promise.all(truncatePromises);
@@ -47,5 +66,6 @@ async function assertDatabaseMissing(table, columnValues) {
 }
 
 module.exports = {
-  truncateTables,
+  truncateAllTables,
+  dropAllTables
 };

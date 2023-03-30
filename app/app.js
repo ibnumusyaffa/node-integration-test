@@ -33,7 +33,11 @@ app.use(function (err, req, res, next) {
     });
   }
 
-  consola.error(err);
+  if (process.env.NODE_ENV !== 'test') {
+    consola.log("aaa")
+    consola.error(err);
+  }
+
   return res.status(500).send({
     message: err.message,
   });

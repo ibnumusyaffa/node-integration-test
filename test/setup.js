@@ -1,5 +1,5 @@
 const db = require('../app/database');
-const { truncateTables } = require('./util/db');
+const { dropAllTables, truncateAllTables } = require('./util/db');
 
 exports.mochaHooks = {
   async beforeAll() {
@@ -9,7 +9,9 @@ exports.mochaHooks = {
   },
   async afterAll() {
     this.timeout(1000 * 5);
-    await truncateTables();
+    await truncateAllTables();
+    // await dropAllTables();
     // await db.migrate.rollback();
+    await db.destroy();
   },
 };
