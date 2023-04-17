@@ -12,6 +12,8 @@ exports.mochaHooks = {
     await truncateAllTables();
     // await dropAllTables();
     // await db.migrate.rollback();
+    
+    // disconnect database
     await db.destroy();
   },
 };
