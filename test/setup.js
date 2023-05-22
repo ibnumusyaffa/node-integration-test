@@ -1,4 +1,4 @@
-const db = require('../app/database');
+const db = require('../app/db');
 const { dropAllTables, truncateAllTables } = require('./util/db');
 
 exports.mochaHooks = {

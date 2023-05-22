@@ -13,8 +13,9 @@ module.exports = (app) => {
 
   router.post('/login', authController.login);
   router.get('/profile', checkAuth, authController.profile);
-
+  
   router.get('/user', userController.list);
+  router.get('/user/:id', userController.detail);
   router.post('/user', validate(rule.user.create), userController.create);
   router.delete('/user/:id', userController.delete);
 

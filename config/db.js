@@ -3,10 +3,10 @@ dotenv.config();
 
 const migrations = {
   tableName: 'migrations',
-  directory: './database/migrations',
+  directory: './db/migrations',
 };
 const seeds = {
-  directory: './database/seeders',
+  directory: './db/seeders',
 };
 const pool = {
   max: 100,

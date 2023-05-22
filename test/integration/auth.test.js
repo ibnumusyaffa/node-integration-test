@@ -2,7 +2,7 @@ const request = require('supertest');
 const app = require('../../app/app');
 const assert = require('chai').assert;
 const expect = require('chai').expect;
-const knex = require('../../app/database');
+const knex = require('../../app/db');
 const { faker } = require('@faker-js/faker');
 const bcrypt = require('bcryptjs');
 
@@ -12,6 +12,7 @@ const user = {
   email: faker.internet.email(),
   fullname: faker.name.fullName(),
   password: '',
+  role_id: 1,
   created_at: new Date(),
   updated_at: new Date(),
 };
@@ -22,6 +23,7 @@ describe('Auth', () => {
     const hashedPassword = await bcrypt.hash('testpassword', 10);
     await knex('users').insert({
       email: user.email,
+      role_id: 1,
       password: hashedPassword,
       fullname: user.fullname,
     });

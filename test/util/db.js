@@ -1,4 +1,4 @@
-const knex = require('../../app/database');
+const knex = require('../../app/db');
 const assert = require('chai').assert;
 async function truncateAllTables() {
   try {

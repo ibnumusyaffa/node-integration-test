@@ -1,4 +1,4 @@
-const knex = require('../database');
+const knex = require('../db');
 const jwt = require('jsonwebtoken');
 
 // Middleware to check if user is authenticated

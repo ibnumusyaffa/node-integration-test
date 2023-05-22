@@ -1,6 +1,9 @@
 
 Integration testing
 
+code example
+https://gitlab.badr.co.id/badr-interactive/node-integration-test-example
+
 # Piramida testing
 - unit test : test function/class secara independet, tanpa akses io (network,database, filesystem)
 - integration test (network, database,)
@@ -31,10 +34,10 @@ cons
 - knex - buat check database
 
 # Action Plan
-- Research lebih lanjut test case yang lebih sulit
+- Research lebih lanjut test case yang lebih sulit (harusnya ga lama)
   - integrasi 3rd party api (misal midtrans), 
   - kirim email, 
   - upload files, 
   - integrasi ke dependency tambahan misal redis/minio
-- Sharing ke knowlede
-- Review code, apa test casenya udah bener
+- Sharing ke knowlede rekan lain
+- Review code, apa cara ngetestnya sama test-test casenya udah bagus apa belum

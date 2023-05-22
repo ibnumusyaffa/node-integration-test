@@ -1,23 +1,18 @@
-const knex = require('../database');
+const User = require('../db/user');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    const user = await knex('users').where({ email }).first();
-
+    const user = await User.query().where({ email }).first();
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-
     const passwordMatch = await bcrypt.compare(password, user.password);
-
     if (!passwordMatch) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-
     const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });

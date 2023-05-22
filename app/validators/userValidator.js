@@ -1,5 +1,5 @@
 const { body } = require('express-validator');
-const knex = require('../database');
+const knex = require('../db');
 let create = [
   body('email')
     .isEmail()

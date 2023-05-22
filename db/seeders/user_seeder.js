@@ -15,6 +15,7 @@ exports.seed = async function (knex) {
     users.push({
       email: faker.internet.email(),
       fullname: faker.name.fullName(),
+      role_id: faker.helpers.arrayElement([1, 2]),
       password: hashedPassword,
       created_at: new Date(),
       updated_at: new Date(),

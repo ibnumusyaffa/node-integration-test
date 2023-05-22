@@ -1,35 +1,30 @@
-const knex = require('../database');
+const User = require('../db/user');
 const bcrypt = require('bcryptjs');
 
 exports.list = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1; // default page of 1
     const limit = parseInt(req.query.limit) || 10; // default limit of 10
-    const offset = (page - 1) * limit; // calculate offset based on page and limit
 
-    const query = () =>
-      knex.table('users').modify((queryBuilder) => {
-        queryBuilder.where(function () {
-          if (req.query.email) {
-            this.where('email', req.query.email);
-          }
-        });
-      });
+    let result = User.query().modifiers({
+      company: (builder) => builder.select(['id', 'uuid', 'name']),
+    });
 
-    const users = await query()
-      .orderBy('id', 'asc')
-      .limit(limit)
-      .offset(offset);
+    if (req.query.email) {
+      const email = `${req.query.email.toLowerCase()}`;
+      result = result.where('email', email);
+    }
+    result = await result.orderBy('id', 'desc').page(page - 1, limit);
 
-    const [count] = await query().count('*', { as: 'count' });
-
-    const totalPages = Math.ceil(count.count / limit); // calculate total number of pages
-    return res.json({
-      data: users,
-      total: count.count,
-      limit: limit,
-      currentPage: page,
-      totalPages: totalPages,
+    const meta = {
+      total: result.total,
+      page,
+      limit,
+      totalPages: Math.ceil(result.total / limit),
+    };
+    return res.send({
+      meta,
+      data: result.results,
     });
   } catch (error) {
     return next(error);
@@ -41,11 +36,12 @@ exports.create = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const user = {
       email: req.body.email,
+      role_id: req.body.role_id,
       fullname: req.body.fullname,
       password: await bcrypt.hash('password', salt),
     };
 
-    const createdUser = await knex('users').insert(user);
+    const createdUser = await User.query().insert(user);
 
     return res.json({
       data: createdUser[0],
@@ -56,10 +52,23 @@ exports.create = async (req, res, next) => {
   }
 };
 
+exports.detail = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+    const user = await User.query().where('id', id).first();
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    return res.json({ data: user });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 exports.delete = async (req, res, next) => {
   const id = req.params.id;
   try {
-    const deletedUser = await knex('users').where('id', id).del();
+    const deletedUser = await User.query().where('id', id).del();
 
     if (deletedUser) {
       res.json({ message: 'User deleted successfully' });
