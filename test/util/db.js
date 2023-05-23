@@ -40,7 +40,7 @@ async function dropAllTables() {
   }
 }
 
-async function expectDatabaseHas(table, columnValues) {
+async function assertDbHas(table, columnValues) {
   // check if the row exists using count() and where()
   const rowCount = await knex(table).count('* as count').where(columnValues);
   // assert that the row exists
@@ -53,7 +53,7 @@ async function expectDatabaseHas(table, columnValues) {
   );
 }
 
-async function expectDatabaseHasOne(table, columnValues) {
+async function assertDbHasOne(table, columnValues) {
   // check if the row exists using count() and where()
   const rowCount = await knex(table).count('* as count').where(columnValues);
 
@@ -67,7 +67,7 @@ async function expectDatabaseHasOne(table, columnValues) {
   );
 }
 
-async function expectDatabaseMissing(table, columnValues) {
+async function assertDbMissing(table, columnValues) {
   // check if the row exists using count() and where()
   const rowCount = await knex(table).count('* as count').where(columnValues);
 
@@ -81,7 +81,7 @@ async function expectDatabaseMissing(table, columnValues) {
 module.exports = {
   truncateAllTables,
   dropAllTables,
-  expectDatabaseHas,
-  expectDatabaseHasOne,
-  expectDatabaseMissing,
+  assertDbHas,
+  assertDbHasOne,
+  assertDbMissing,
 };

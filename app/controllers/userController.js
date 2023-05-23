@@ -6,9 +6,7 @@ exports.list = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // default page of 1
     const limit = parseInt(req.query.limit) || 10; // default limit of 10
 
-    let result = User.query().modifiers({
-      company: (builder) => builder.select(['id', 'uuid', 'name']),
-    });
+    let result = User.query().withGraphFetched('[role]');
 
     if (req.query.email) {
       const email = `${req.query.email.toLowerCase()}`;
@@ -52,10 +50,49 @@ exports.create = async (req, res, next) => {
   }
 };
 
+exports.update = async (req, res, next) => {
+  try {
+    const { email, role_id, fullname, password } = req.body;
+    const id = req.params.id;
+    // Find the user to update
+    const user = await User.query().findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found',
+      });
+    }
+
+    // Update user properties
+    user.email = email;
+    user.role_id = role_id;
+    user.fullname = fullname;
+
+    // Update password if provided
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    // Save the updated user
+    const updatedUser = await user.$query().update();
+
+    return res.json({
+      data: updatedUser,
+      message: 'User updated successfully',
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 exports.detail = async (req, res, next) => {
   const id = req.params.id;
   try {
-    const user = await User.query().where('id', id).first();
+    const user = await User.query()
+      .withGraphFetched('[role]')
+      .where('id', id)
+      .first();
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

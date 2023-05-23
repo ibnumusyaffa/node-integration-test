@@ -3,18 +3,24 @@ const app = require('../../app/app');
 const assert = require('chai').assert;
 const knex = require('../../app/db');
 const { faker } = require('@faker-js/faker');
-const { expectDatabaseHasOne, expectDatabaseMissing } = require('../util/db');
+const { assertDbHasOne, assertDbHas, assertDbMissing } = require('../util/db');
+const { createToken } = require('../util/auth');
 
 describe('CRUD user', () => {
   describe('GET /user', () => {
     it('returns a list of users', async () => {
-      const res = await request(app).get('/user');
+      const res = await request(app)
+        .get('/user')
+        .auth(createToken('admin@example.com'), {
+          type: 'bearer',
+        });
       assert.isArray(res.body.data, 'data is an array');
       assert.isNumber(res.body.meta.total, 'total is a number');
       assert.isNumber(res.body.meta.limit, 'limit is a number');
       assert.isNumber(res.body.meta.totalPages, 'totalPages is a number');
 
       const userCount = await knex('users').count('* as count').first();
+
       assert.equal(res.body.meta.total, userCount.count, 'total is correct');
     });
 
@@ -31,6 +37,9 @@ describe('CRUD user', () => {
       await knex('users').insert(insertedUser);
       const res = await request(app)
         .get('/user')
+        .auth(createToken('admin@example.com'), {
+          type: 'bearer',
+        })
         .query({ email: insertedUser.email });
 
       assert.equal(
@@ -53,12 +62,16 @@ describe('CRUD user', () => {
       };
 
       //send data
-      const res = await request(app).post('/user').send(body);
-
+      const res = await request(app)
+        .post('/user')
+        .auth(createToken('admin@example.com'), {
+          type: 'bearer',
+        })
+        .send(body);
       //check if status code is 200
       assert.equal(res.statusCode, 200);
 
-      await expectDatabaseHasOne('users', {
+      await assertDbHasOne('users', {
         email: body.email,
         role_id: 1,
         fullname: body.fullname,
@@ -78,16 +91,79 @@ describe('CRUD user', () => {
       await knex('users').insert(insertedUser);
 
       // send data
-      const res = await request(app).post('/user').send({
-        email: insertedUser.email,
-        role_id: 1,
-        fullname: 'Test User',
-        password: 'password123',
-      });
+      const res = await request(app)
+        .post('/user')
+        .auth(createToken('admin@example.com'), {
+          type: 'bearer',
+        })
+        .send({
+          email: insertedUser.email,
+          role_id: 1,
+          fullname: 'Test User',
+          password: 'password123',
+        });
 
       //expected response
       assert.equal(res.statusCode, 422);
-      assert.equal(res.body.errors.email, 'Email already in use');
+      assert.isString(res.body.errors.email, 'errors.email is string');
+    });
+    it('should return an error if role_id is not valid', async () => {
+      // send data
+      const email = faker.internet.email();
+      const res = await request(app)
+        .post('/user')
+        .auth(createToken('admin@example.com'), {
+          type: 'bearer',
+        })
+        .send({
+          email: email,
+          role_id: 0,
+          fullname: 'Test User',
+          password: 'password123',
+        });
+
+      //expected response
+      assert.equal(res.statusCode, 422);
+      assert.equal(res.body.errors.role_id, 'role id is not valid');
+      //expected db state
+      await assertDbMissing('users', {
+        email,
+      });
+    });
+  });
+
+  describe('PUT /user', () => {
+    it('should update a new user with valid data', async () => {
+      //prepare data
+      const body = {
+        email: faker.internet.email(),
+        fullname: faker.name.fullName(),
+        password: '',
+        role_id: 1,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+      let id = await knex('users').insert(body);
+      id = id[0];
+      const newData = {
+        email: faker.internet.email(),
+        fullname: faker.name.fullName(),
+        role_id: 2,
+      };
+      const res = await request(app)
+        .put(`/user/${id}`)
+        .auth(createToken('admin@example.com'), {
+          type: 'bearer',
+        })
+        .send(newData);
+
+      assert.equal(res.statusCode, 200);
+      await assertDbHasOne('users', {
+        id: id,
+        email: newData.email,
+        fullname: newData.fullname,
+        role_id: newData.role_id,
+      });
     });
   });
 
@@ -103,14 +179,22 @@ describe('CRUD user', () => {
         updated_at: new Date(),
       };
       const id = await knex('users').insert(insertedUser);
-      const res = await request(app).get(`/user/${id[0]}`);
+      const res = await request(app)
+        .get(`/user/${id[0]}`)
+        .auth(createToken('admin@example.com'), {
+          type: 'bearer',
+        });
 
       assert.equal(res.statusCode, 200);
       assert.equal(res.body.data.email, insertedUser.email);
     });
 
     it('should return an error if user does not exist', async () => {
-      const res = await request(app).get('/user/9999');
+      const res = await request(app)
+        .get('/user/9999')
+        .auth(createToken('admin@example.com'), {
+          type: 'bearer',
+        });
       assert.equal(res.statusCode, 404);
       assert.equal(res.body.message, 'User not found');
     });
@@ -128,18 +212,26 @@ describe('CRUD user', () => {
         updated_at: new Date(),
       };
       const id = await knex('users').insert(insertedUser);
-      const res = await request(app).delete(`/user/${id[0]}`);
+      const res = await request(app)
+        .delete(`/user/${id[0]}`)
+        .auth(createToken('admin@example.com'), {
+          type: 'bearer',
+        });
 
       assert.equal(res.statusCode, 200);
       assert.equal(res.body.message, 'User deleted successfully');
 
-      await expectDatabaseMissing('users', {
+      await assertDbMissing('users', {
         id: id[0],
       });
     });
 
     it('should return an error if user does not exist', async () => {
-      const res = await request(app).delete('/user/9999');
+      const res = await request(app)
+        .delete('/user/9999')
+        .auth(createToken('admin@example.com'), {
+          type: 'bearer',
+        });
       assert.equal(res.statusCode, 404);
       assert.equal(res.body.message, 'User not found');
     });

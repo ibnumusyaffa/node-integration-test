@@ -13,11 +13,22 @@ module.exports = (app) => {
 
   router.post('/login', authController.login);
   router.get('/profile', checkAuth, authController.profile);
-  
-  router.get('/user', userController.list);
-  router.get('/user/:id', userController.detail);
-  router.post('/user', validate(rule.user.create), userController.create);
-  router.delete('/user/:id', userController.delete);
+
+  router.get('/user', checkAuth, userController.list);
+  router.get('/user/:id', checkAuth, userController.detail);
+  router.post(
+    '/user',
+    checkAuth,
+    validate(rule.user.create),
+    userController.create
+  );
+  router.put(
+    '/user/:id',
+    checkAuth,
+    validate(rule.user.update),
+    userController.update
+  );
+  router.delete('/user/:id', checkAuth, userController.delete);
 
   app.use(router);
 };
