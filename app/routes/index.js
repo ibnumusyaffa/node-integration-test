@@ -1,11 +1,13 @@
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
 const productController = require('../controllers/productController');
+const saleContoller = require('../controllers/saleContoller');
 
 const { validate } = require('../validators/index');
 const rule = {
   user: require('../validators/userValidator'),
   product: require('../validators/productValidator'),
+  checkout: require('../validators/checkoutValidator'),
 };
 
 const { checkAuth } = require('../middlewares/auth');
@@ -47,6 +49,15 @@ module.exports = (app) => {
     productController.update
   );
   router.delete('/product/:id', checkAuth, productController.delete);
+
+  router.post(
+    '/sale/checkout',
+    checkAuth,
+    validate(rule.checkout.validateCheckout),
+    saleContoller.checkout
+  );
+
+  router.get('/sale/history', checkAuth, saleContoller.history);
 
   app.use(router);
 };
