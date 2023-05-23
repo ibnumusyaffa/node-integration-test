@@ -2,20 +2,22 @@ const knex = require('../../app/db');
 const assert = require('chai').assert;
 async function truncateAllTables() {
   try {
-    await knex.schema.raw('SET FOREIGN_KEY_CHECKS = 0');
+    await knex.transaction(async (trx) => {
+      await trx.schema.raw('SET FOREIGN_KEY_CHECKS = 0');
 
-    const tables = await knex.raw('SHOW TABLES');
-    const tableNames = tables[0]
-      .map((table) => Object.values(table)[0])
-      .filter((item) => !['migrations', 'migrations_lock'].includes(item));
+      const tables = await trx.raw('SHOW TABLES');
+      const tableNames = tables[0]
+        .map((table) => Object.values(table)[0])
+        .filter((item) => !['migrations', 'migrations_lock'].includes(item));
 
-    const truncatePromises = [];
-    for (const tableName of tableNames) {
-      truncatePromises.push(knex(tableName).truncate());
-    }
+      const truncatePromises = [];
+      for (const tableName of tableNames) {
+        truncatePromises.push(trx(tableName).truncate());
+      }
 
-    await Promise.all(truncatePromises);
-    await knex.schema.raw('SET FOREIGN_KEY_CHECKS = 1');
+      await Promise.all(truncatePromises);
+      await trx.schema.raw('SET FOREIGN_KEY_CHECKS = 1');
+    });
   } catch (error) {
     console.error(error);
   }

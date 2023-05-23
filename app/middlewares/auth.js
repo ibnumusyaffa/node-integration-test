@@ -1,4 +1,4 @@
-const knex = require('../db');
+const User = require('../db/user');
 const jwt = require('jsonwebtoken');
 
 // Middleware to check if user is authenticated
@@ -9,7 +9,7 @@ const checkAuth = (req, res, next) => {
       if (err) {
         return res.status(401).json({ error: 'Authentication failed' });
       }
-      const user = await knex('users').where({ email: auth.email }).first();
+      const user = await User.query().where({ email: auth.email }).first();
       req.user = user;
       next();
     });

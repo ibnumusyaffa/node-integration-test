@@ -143,8 +143,8 @@ describe('CRUD user', () => {
         created_at: new Date(),
         updated_at: new Date(),
       };
-      let id = await knex('users').insert(body);
-      id = id[0];
+      let [id] = await knex('users').insert(body);
+
       const newData = {
         email: faker.internet.email(),
         fullname: faker.name.fullName(),
@@ -178,9 +178,9 @@ describe('CRUD user', () => {
         created_at: new Date(),
         updated_at: new Date(),
       };
-      const id = await knex('users').insert(insertedUser);
+      const [id] = await knex('users').insert(insertedUser);
       const res = await request(app)
-        .get(`/user/${id[0]}`)
+        .get(`/user/${id}`)
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         });
@@ -211,9 +211,9 @@ describe('CRUD user', () => {
         created_at: new Date(),
         updated_at: new Date(),
       };
-      const id = await knex('users').insert(insertedUser);
+      const [id] = await knex('users').insert(insertedUser);
       const res = await request(app)
-        .delete(`/user/${id[0]}`)
+        .delete(`/user/${id}`)
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         });
@@ -222,7 +222,7 @@ describe('CRUD user', () => {
       assert.equal(res.body.message, 'User deleted successfully');
 
       await assertDbMissing('users', {
-        id: id[0],
+        id: id,
       });
     });
 
