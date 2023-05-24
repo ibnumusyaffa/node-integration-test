@@ -2,7 +2,7 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-const { faker } = require('@faker-js/faker');
+// const { faker } = require('@faker-js/faker');
 const bcrypt = require('bcryptjs');
 
 exports.seed = async function (knex) {
@@ -29,17 +29,5 @@ exports.seed = async function (knex) {
     },
   ];
 
-  for (let i = 0; i < 100; i++) {
-    users.push({
-      email: faker.internet.email(),
-      fullname: faker.name.fullName(),
-      role_id: faker.helpers.arrayElement([1, 2]),
-      password: hashedPassword,
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-  }
-
-  await knex('users').del();
   await knex('users').insert(users);
 };

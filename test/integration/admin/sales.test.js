@@ -3,6 +3,7 @@ const app = require('../../../app/app');
 const { expect } = require('chai');
 const knex = require('../../../app/db');
 const { createToken } = require('../../util/auth');
+const productBuilder = require('../../factory/product');
 
 describe('/admin/sale', () => {
   describe('GET /admin/sale/history', () => {
@@ -12,28 +13,21 @@ describe('/admin/sale', () => {
         .where('email', 'admin@example.com')
         .first();
 
-      const [product1Id] = await knex('products').insert({
-        name: 'Product 1',
-        description: 'Dummy product 1',
-        price: 9.99,
-        stock: 10,
-      });
-      const [product2Id] = await knex('products').insert({
-        name: 'Product 2',
-        description: 'Dummy product 2',
-        price: 19.99,
-        stock: 5,
-      });
+      const product1 = productBuilder.one();
+      const product2 = productBuilder.one();
+
+      const [product1Id] = await knex('products').insert(product1);
+      const [product2Id] = await knex('products').insert(product2);
 
       // Create dummy sales
       await knex('sales').insert([
         {
-          total: 19.98,
+          total: product1.price * 2,
           user_id: user.id,
           created_at: new Date(),
         },
         {
-          total: 39.98,
+          total: product2.price * 2,
           user_id: user.id,
           created_at: new Date(),
         },
@@ -56,6 +50,7 @@ describe('/admin/sale', () => {
       const res = await request(app)
         .get('/admin/sale/history')
         .auth(createToken('admin@example.com'), { type: 'bearer' });
+
       expect(res.body.data).to.be.an('array');
     });
   });
@@ -68,16 +63,12 @@ describe('/admin/sale', () => {
         .first();
 
       // Create a dummy product
-      const [productId] = await knex('products').insert({
-        name: 'Product 1',
-        description: 'Dummy product',
-        price: 9.99,
-        stock: 10,
-      });
+      const product = productBuilder.one()
+      const [productId] = await knex('products').insert(product);
 
       // Create a dummy sale
       const [saleId] = await knex('sales').insert({
-        total: 9.99,
+        total: product.price,
         user_id: user.id,
         created_at: new Date(),
       });
@@ -95,7 +86,7 @@ describe('/admin/sale', () => {
         .expect(200);
 
       expect(res.body.data).to.have.property('id', saleId);
-      expect(res.body.data).to.have.property('total', '9.99');
+      expect(res.body.data).to.have.property('total', product.price);
       expect(res.body.data).to.have.property('user_id', user.id);
       expect(res.body.data).to.have.property('created_at');
       expect(res.body.data.products).to.be.an('array');
@@ -146,7 +137,7 @@ describe('/admin/sale', () => {
       const res = await request(app)
         .get(`/admin/sale/${saleId}`)
         .auth(createToken(user1.email), { type: 'bearer' });
-        
+
       expect(res.body.data).to.have.property('id', saleId);
       expect(res.body.data).to.have.property('total', '9.99');
       expect(res.body.data).to.have.property('user_id', user2.id);

@@ -2,13 +2,20 @@ const request = require('supertest');
 const app = require('../../../app/app');
 const assert = require('chai').assert;
 const knex = require('../../../app/db');
-const { faker } = require('@faker-js/faker');
+
 const { assertDbHasOne, assertDbMissing } = require('../../util/db');
 const { createToken } = require('../../util/auth');
+const productBuilder = require('../../factory/product');
 
 describe('/admin/product', () => {
+  before(() => {
+    console.log('beforeAll');
+  });
   describe('GET /admin/product', () => {
     it('returns a list of products', async () => {
+      const insertedProduct = productBuilder.many(100);
+      await knex('products').insert(insertedProduct);
+
       const res = await request(app)
         .get('/admin/product')
         .auth(createToken('admin@example.com'), { type: 'bearer' });
@@ -24,12 +31,7 @@ describe('/admin/product', () => {
 
     it('returns a filtered list of products with name parameter', async () => {
       // Prepare data
-      const insertedProduct = {
-        name: faker.commerce.productName(),
-        description: faker.lorem.sentence(),
-        price: faker.commerce.price(),
-        stock: faker.random.numeric(),
-      };
+      const insertedProduct = productBuilder.one();
       await knex('products').insert(insertedProduct);
 
       const res = await request(app)
@@ -57,12 +59,7 @@ describe('/admin/product', () => {
   describe('POST /admin/product', () => {
     it('should create a new product with valid data', async () => {
       // Prepare data
-      const body = {
-        name: faker.commerce.productName(),
-        description: faker.lorem.sentence(),
-        price: faker.commerce.price(),
-        stock: faker.random.numeric(),
-      };
+      const body = productBuilder.one();
 
       // Send data
       const res = await request(app)
@@ -92,20 +89,10 @@ describe('/admin/product', () => {
   describe('PUT /admin/product', () => {
     it('should update a product with valid data', async () => {
       // Prepare data
-      const insertedProduct = {
-        name: faker.commerce.productName(),
-        description: faker.lorem.sentence(),
-        price: faker.commerce.price(),
-        stock: faker.random.numeric(),
-      };
+      const insertedProduct = productBuilder.one();
       const [productId] = await knex('products').insert(insertedProduct);
 
-      const newData = {
-        name: faker.commerce.productName(),
-        description: faker.lorem.sentence(),
-        price: faker.commerce.price(),
-        stock: faker.random.numeric(),
-      };
+      const newData = productBuilder.one();
 
       const res = await request(app)
         .put(`/admin/product/${productId}`)
@@ -135,12 +122,7 @@ describe('/admin/product', () => {
   describe('GET /admin/product/:id', () => {
     it('should return a product with the given id', async () => {
       // Prepare data
-      const insertedProduct = {
-        name: faker.commerce.productName(),
-        description: faker.lorem.sentence(),
-        price: faker.commerce.price(),
-        stock: faker.random.numeric(),
-      };
+      const insertedProduct = productBuilder.one();
       const [productId] = await knex('products').insert(insertedProduct);
 
       const res = await request(app)
@@ -173,12 +155,7 @@ describe('/admin/product', () => {
   describe('DELETE /admin/product', () => {
     it('should delete a product', async () => {
       // Prepare data
-      const insertedProduct = {
-        name: faker.commerce.productName(),
-        description: faker.lorem.sentence(),
-        price: faker.commerce.price(),
-        stock: faker.random.numeric(),
-      };
+      const insertedProduct = productBuilder.one();
       const [productId] = await knex('products').insert(insertedProduct);
 
       const res = await request(app)
@@ -208,5 +185,9 @@ describe('/admin/product', () => {
 
       assert.equal(res.body.message, 'Access denied');
     });
+  });
+
+  after(() => {
+    console.log('beforeAll');
   });
 });
