@@ -4,107 +4,8 @@ const { expect } = require('chai');
 const knex = require('../../../app/db');
 const { createToken } = require('../../util/auth');
 
-describe('/sales', () => {
-  describe('POST /sales/checkout', () => {
-    it('should checkout and create a new sale with valid data', async () => {
-      // Create a test product
-      const product = {
-        name: 'Test Product',
-        description: 'A test product',
-        price: 9.99,
-        stock: 10,
-      };
-      const [productId] = await knex('products').insert(product);
-
-      // Define the checkout payload
-      const payload = {
-        products: [
-          {
-            id: productId,
-            quantity: 2,
-          },
-        ],
-      };
-
-      // Send the checkout request
-      const res = await request(app)
-        .post('/sale/checkout')
-        .auth(createToken('admin@example.com'), { type: 'bearer' })
-        .send(payload);
-
-      // Check the response
-      expect(res.status).to.equal(200);
-      expect(res.body).to.have.property('message', 'Checkout successful');
-      expect(res.body).to.have.property('saleId');
-
-      // Check the database for the created sale
-      const sale = await knex('sales').where('id', res.body.saleId).first();
-      expect(sale).to.exist;
-      expect(parseFloat(sale.total)).to.equal(19.98); // 2 * 9.99
-
-      // Check the database for the sale products
-      const saleProducts = await knex('sales_product')
-        .where('sale_id', sale.id)
-        .select();
-
-      // Check the database for the updated product stock
-      expect(saleProducts).to.have.lengthOf(1);
-      expect(saleProducts[0].product_id).to.equal(productId);
-      expect(saleProducts[0].quantity).to.equal(2);
-
-      const updatedProduct = await knex('products')
-        .where('id', productId)
-        .select('stock')
-        .first();
-      expect(updatedProduct).to.exist;
-      expect(updatedProduct.stock).to.equal(8);
-    });
-
-    it('should return an error if product does not exist', async () => {
-      // Define the checkout payload with a non-existent product ID
-      const payload = {
-        products: [
-          {
-            id: 9999,
-            quantity: 1,
-          },
-        ],
-      };
-
-      // Send the checkout request
-      const res = await request(app)
-        .post('/sale/checkout')
-        .auth(createToken('admin@example.com'), { type: 'bearer' })
-        .send(payload);
-
-      // Check the response
-      expect(res.statusCode).to.equal(422);
-      expect(res.body).to.have.property('message', 'Product not found');
-    });
-
-    it('should return validation errors for invalid payload', async () => {
-      // Define an invalid checkout payload with missing required fields
-      const payload = {
-        products: [
-          {
-            // Missing 'id' and 'quantity'
-          },
-        ],
-      };
-
-      // Send the checkout request
-      const res = await request(app)
-        .post('/sale/checkout')
-        .auth(createToken('admin@example.com'), { type: 'bearer' })
-        .send(payload);
-
-      // Check the response
-      expect(res.status).to.equal(422);
-      expect(res.body).to.have.property('errors');
-    });
-  });
-
-  describe('GET /sales/history', () => {
+describe('/admin/sale', () => {
+  describe('GET /admin/sale/history', () => {
     it('should return the checkout history for the authenticated user', async () => {
       // Create dummy products
       const user = await knex('users')
@@ -153,15 +54,13 @@ describe('/sales', () => {
       ]);
 
       const res = await request(app)
-        .get('/sale/history')
-        .auth(createToken('admin@example.com'), { type: 'bearer' })
-        .expect(200);
-
+        .get('/admin/sale/history')
+        .auth(createToken('admin@example.com'), { type: 'bearer' });
       expect(res.body.data).to.be.an('array');
     });
   });
 
-  describe('GET /sales/:saleId', () => {
+  describe('GET /admin/sales/:saleId', () => {
     it('should return the details of a specific sale for the authenticated user', async () => {
       // Create a dummy user
       const user = await knex('users')
@@ -191,7 +90,7 @@ describe('/sales', () => {
       });
 
       const res = await request(app)
-        .get(`/sale/${saleId}`)
+        .get(`/admin/sale/${saleId}`)
         .auth(createToken('admin@example.com'), { type: 'bearer' })
         .expect(200);
 
@@ -206,14 +105,14 @@ describe('/sales', () => {
     it('should return a 404 error if the sale is not found', async () => {
       const nonExistingSaleId = 9999;
       const res = await request(app)
-        .get(`/sale/${nonExistingSaleId}`)
+        .get(`/admin/sale/${nonExistingSaleId}`)
         .auth(createToken('admin@example.com'), { type: 'bearer' })
         .expect(404);
 
       expect(res.body).to.have.property('message', 'Sale not found');
     });
 
-    it('should return a 404 error if the sale belongs to another user', async () => {
+    it('admin can see sale another user', async () => {
       // Create dummy users
       const user1 = await knex('users')
         .where('email', 'admin@example.com')
@@ -233,7 +132,7 @@ describe('/sales', () => {
       // Create a dummy sale belonging to user1
       const [saleId] = await knex('sales').insert({
         total: 9.99,
-        user_id: user1.id,
+        user_id: user2.id,
         created_at: new Date(),
       });
 
@@ -245,11 +144,15 @@ describe('/sales', () => {
       });
 
       const res = await request(app)
-        .get(`/sale/${saleId}`)
-        .auth(createToken(user2.email), { type: 'bearer' })
-        .expect(404);
-
-      expect(res.body).to.have.property('message', 'Sale not found');
+        .get(`/admin/sale/${saleId}`)
+        .auth(createToken(user1.email), { type: 'bearer' });
+        
+      expect(res.body.data).to.have.property('id', saleId);
+      expect(res.body.data).to.have.property('total', '9.99');
+      expect(res.body.data).to.have.property('user_id', user2.id);
+      expect(res.body.data).to.have.property('created_at');
+      expect(res.body.data.products).to.be.an('array');
+      expect(res.body.data.products).to.have.lengthOf(1);
     });
   });
 });

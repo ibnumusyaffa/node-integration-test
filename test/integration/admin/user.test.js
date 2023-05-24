@@ -49,6 +49,15 @@ describe('/admin/user', () => {
       );
       assert.equal(res.body.meta.total, 1, 'total is correct');
     });
+
+    it('returns a 403 error for a non-admin user', async () => {
+      const res = await request(app)
+        .get('/admin/user')
+        .auth(createToken('customer@example.com'), { type: 'bearer' })
+        .expect(403);
+
+      assert.equal(res.body.message, 'Access denied');
+    });
   });
 
   describe('POST /admin/user', () => {
@@ -130,6 +139,15 @@ describe('/admin/user', () => {
         email,
       });
     });
+
+    it('returns a 403 error for a non-admin user', async () => {
+      const res = await request(app)
+        .post('/admin/user')
+        .auth(createToken('customer@example.com'), { type: 'bearer' })
+        .expect(403);
+
+      assert.equal(res.body.message, 'Access denied');
+    });
   });
 
   describe('PUT /admin/user', () => {
@@ -165,6 +183,15 @@ describe('/admin/user', () => {
         role_id: newData.role_id,
       });
     });
+
+    it('returns a 403 error for a non-admin user', async () => {
+      const res = await request(app)
+        .put('/admin/user/9999')
+        .auth(createToken('customer@example.com'), { type: 'bearer' })
+        .expect(403);
+
+      assert.equal(res.body.message, 'Access denied');
+    });
   });
 
   describe('GET /admin/user/:id', () => {
@@ -197,6 +224,15 @@ describe('/admin/user', () => {
         });
       assert.equal(res.statusCode, 404);
       assert.equal(res.body.message, 'User not found');
+    });
+
+    it('returns a 403 error for a non-admin user', async () => {
+      const res = await request(app)
+        .get('/admin/user/9999')
+        .auth(createToken('customer@example.com'), { type: 'bearer' })
+        .expect(403);
+
+      assert.equal(res.body.message, 'Access denied');
     });
   });
 
@@ -234,6 +270,15 @@ describe('/admin/user', () => {
         });
       assert.equal(res.statusCode, 404);
       assert.equal(res.body.message, 'User not found');
+    });
+
+    it('returns a 403 error for a non-admin user', async () => {
+      const res = await request(app)
+        .delete('/admin/user/9999')
+        .auth(createToken('customer@example.com'), { type: 'bearer' })
+        .expect(403);
+
+      assert.equal(res.body.message, 'Access denied');
     });
   });
 });

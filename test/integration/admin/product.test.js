@@ -43,6 +43,15 @@ describe('/admin/product', () => {
       );
       assert.equal(res.body.meta.total, 1, 'total is correct');
     });
+
+    it('returns a 403 error for a non-admin user', async () => {
+      const res = await request(app)
+        .get('/admin/product')
+        .auth(createToken('customer@example.com'), { type: 'bearer' })
+        .expect(403);
+
+      assert.equal(res.body.message, 'Access denied');
+    });
   });
 
   describe('POST /admin/product', () => {
@@ -69,6 +78,14 @@ describe('/admin/product', () => {
         price: body.price,
         stock: body.stock,
       });
+    });
+    it('returns a 403 error for a non-admin user', async () => {
+      const res = await request(app)
+        .post('/admin/product')
+        .auth(createToken('customer@example.com'), { type: 'bearer' })
+        .expect(403);
+
+      assert.equal(res.body.message, 'Access denied');
     });
   });
 
@@ -104,6 +121,15 @@ describe('/admin/product', () => {
         stock: newData.stock,
       });
     });
+
+    it('returns a 403 error for a non-admin user', async () => {
+      const res = await request(app)
+        .put(`/admin/product/99999`)
+        .auth(createToken('customer@example.com'), { type: 'bearer' })
+        .expect(403);
+
+      assert.equal(res.body.message, 'Access denied');
+    });
   });
 
   describe('GET /admin/product/:id', () => {
@@ -132,6 +158,15 @@ describe('/admin/product', () => {
 
       assert.equal(res.statusCode, 404);
       assert.equal(res.body.message, 'Product not found');
+    });
+
+    it('returns a 403 error for a non-admin user', async () => {
+      const res = await request(app)
+        .get('/admin/product')
+        .auth(createToken('customer@example.com'), { type: 'bearer' })
+        .expect(403);
+
+      assert.equal(res.body.message, 'Access denied');
     });
   });
 
@@ -163,6 +198,15 @@ describe('/admin/product', () => {
 
       assert.equal(res.statusCode, 404);
       assert.equal(res.body.message, 'Product not found');
+    });
+
+    it('returns a 403 error for a non-admin user', async () => {
+      const res = await request(app)
+        .delete('/admin/product/99999')
+        .auth(createToken('customer@example.com'), { type: 'bearer' })
+        .expect(403);
+
+      assert.equal(res.body.message, 'Access denied');
     });
   });
 });
