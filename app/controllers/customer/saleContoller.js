@@ -1,6 +1,6 @@
-const Sale = require('../db/sale');
-const SaleProduct = require('../db/sale_product');
-const Product = require('../db/product');
+const Sale = require('../../db/sale');
+const SaleProduct = require('../../db/sale_product');
+const Product = require('../../db/product');
 
 exports.checkout = async (req, res, next) => {
   try {
@@ -77,4 +77,25 @@ exports.history = async (req, res, next) => {
   }
 };
 
+exports.detail = async (req, res, next) => {
+  try {
+    const saleId = req.params.id; // Assuming the sale ID is provided in the request parameters
+    const userId = req.user.id; // Assuming the user ID is available in req.user
+
+    // Fetch the sale details including associated products
+    const sale = await Sale.query()
+      .findById(saleId)
+      .where('user_id', userId)
+      .withGraphFetched('[products]');
+      
+
+    if (!sale) {
+      return res.status(404).json({ message: 'Sale not found' });
+    }
+
+    return res.json({ data: sale });
+  } catch (error) {
+    return next(error);
+  }
+};
 module.exports = exports;

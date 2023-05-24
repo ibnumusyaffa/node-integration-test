@@ -1,4 +1,4 @@
-const User = require('../db/user');
+const User = require('../../db/user');
 const bcrypt = require('bcryptjs');
 
 exports.list = async (req, res, next) => {

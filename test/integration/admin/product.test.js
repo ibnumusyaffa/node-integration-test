@@ -1,16 +1,16 @@
 const request = require('supertest');
-const app = require('../../app/app');
+const app = require('../../../app/app');
 const assert = require('chai').assert;
-const knex = require('../../app/db');
+const knex = require('../../../app/db');
 const { faker } = require('@faker-js/faker');
-const { assertDbHasOne, assertDbMissing } = require('../util/db');
-const { createToken } = require('../util/auth');
+const { assertDbHasOne, assertDbMissing } = require('../../util/db');
+const { createToken } = require('../../util/auth');
 
-describe('CRUD product', () => {
-  describe('GET /product', () => {
+describe('/admin/product', () => {
+  describe('GET /admin/product', () => {
     it('returns a list of products', async () => {
       const res = await request(app)
-        .get('/product')
+        .get('/admin/product')
         .auth(createToken('admin@example.com'), { type: 'bearer' });
       assert.isArray(res.body.data, 'data is an array');
       assert.isNumber(res.body.meta.total, 'total is a number');
@@ -33,7 +33,7 @@ describe('CRUD product', () => {
       await knex('products').insert(insertedProduct);
 
       const res = await request(app)
-        .get('/product')
+        .get('/admin/product')
         .auth(createToken('admin@example.com'), { type: 'bearer' })
         .query({ name: insertedProduct.name });
       assert.equal(
@@ -45,7 +45,7 @@ describe('CRUD product', () => {
     });
   });
 
-  describe('POST /product', () => {
+  describe('POST /admin/product', () => {
     it('should create a new product with valid data', async () => {
       // Prepare data
       const body = {
@@ -57,7 +57,7 @@ describe('CRUD product', () => {
 
       // Send data
       const res = await request(app)
-        .post('/product')
+        .post('/admin/product')
         .auth(createToken('admin@example.com'), { type: 'bearer' })
         .send(body);
       // Check if status code is 200
@@ -72,7 +72,7 @@ describe('CRUD product', () => {
     });
   });
 
-  describe('PUT /product', () => {
+  describe('PUT /admin/product', () => {
     it('should update a product with valid data', async () => {
       // Prepare data
       const insertedProduct = {
@@ -91,7 +91,7 @@ describe('CRUD product', () => {
       };
 
       const res = await request(app)
-        .put(`/product/${productId}`)
+        .put(`/admin/product/${productId}`)
         .auth(createToken('admin@example.com'), { type: 'bearer' })
         .send(newData);
 
@@ -106,7 +106,7 @@ describe('CRUD product', () => {
     });
   });
 
-  describe('GET /product/:id', () => {
+  describe('GET /admin/product/:id', () => {
     it('should return a product with the given id', async () => {
       // Prepare data
       const insertedProduct = {
@@ -118,7 +118,7 @@ describe('CRUD product', () => {
       const [productId] = await knex('products').insert(insertedProduct);
 
       const res = await request(app)
-        .get(`/product/${productId}`)
+        .get(`/admin/product/${productId}`)
         .auth(createToken('admin@example.com'), { type: 'bearer' });
 
       assert.equal(res.statusCode, 200);
@@ -127,7 +127,7 @@ describe('CRUD product', () => {
 
     it('should return an error if product does not exist', async () => {
       const res = await request(app)
-        .get('/product/9999')
+        .get('/admin/product/9999')
         .auth(createToken('admin@example.com'), { type: 'bearer' });
 
       assert.equal(res.statusCode, 404);
@@ -135,7 +135,7 @@ describe('CRUD product', () => {
     });
   });
 
-  describe('DELETE /product', () => {
+  describe('DELETE /admin/product', () => {
     it('should delete a product', async () => {
       // Prepare data
       const insertedProduct = {
@@ -147,7 +147,7 @@ describe('CRUD product', () => {
       const [productId] = await knex('products').insert(insertedProduct);
 
       const res = await request(app)
-        .delete(`/product/${productId}`)
+        .delete(`/admin/product/${productId}`)
         .auth(createToken('admin@example.com'), { type: 'bearer' });
 
       assert.equal(res.statusCode, 200);
@@ -158,7 +158,7 @@ describe('CRUD product', () => {
 
     it('should return an error if product does not exist', async () => {
       const res = await request(app)
-        .delete('/product/9999')
+        .delete('/admin/product/9999')
         .auth(createToken('admin@example.com'), { type: 'bearer' });
 
       assert.equal(res.statusCode, 404);

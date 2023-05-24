@@ -19,6 +19,14 @@ exports.seed = async function (knex) {
       created_at: new Date(),
       updated_at: new Date(),
     },
+    {
+      email: 'customer@example.com',
+      fullname: 'customer',
+      role_id: 2,
+      password: hashedPassword,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
   ];
 
   for (let i = 0; i < 100; i++) {

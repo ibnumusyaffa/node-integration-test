@@ -1,7 +1,7 @@
-const userController = require('../controllers/userController');
+const userController = require('../controllers/admin/userController');
 const authController = require('../controllers/authController');
-const productController = require('../controllers/productController');
-const saleContoller = require('../controllers/saleContoller');
+const productController = require('../controllers/admin/productController');
+const saleContoller = require('../controllers/customer/saleContoller');
 
 const { validate } = require('../validators/index');
 const rule = {
@@ -18,37 +18,37 @@ module.exports = (app) => {
   router.post('/login', authController.login);
   router.get('/profile', checkAuth, authController.profile);
 
-  router.get('/user', checkAuth, userController.list);
-  router.get('/user/:id', checkAuth, userController.detail);
+  router.get('/admin/user', checkAuth, userController.list);
+  router.get('/admin/user/:id', checkAuth, userController.detail);
   router.post(
-    '/user',
+    '/admin/user',
     checkAuth,
     validate(rule.user.create),
     userController.create
   );
   router.put(
-    '/user/:id',
+    '/admin/user/:id',
     checkAuth,
     validate(rule.user.update),
     userController.update
   );
-  router.delete('/user/:id', checkAuth, userController.delete);
+  router.delete('/admin/user/:id', checkAuth, userController.delete);
 
-  router.get('/product', checkAuth, productController.list);
-  router.get('/product/:id', checkAuth, productController.detail);
+  router.get('/admin/product', checkAuth, productController.list);
+  router.get('/admin/product/:id', checkAuth, productController.detail);
   router.post(
-    '/product',
+    '/admin/product',
     checkAuth,
     validate(rule.product.create),
     productController.create
   );
   router.put(
-    '/product/:id',
+    '/admin/product/:id',
     checkAuth,
     validate(rule.product.update),
     productController.update
   );
-  router.delete('/product/:id', checkAuth, productController.delete);
+  router.delete('/admin/product/:id', checkAuth, productController.delete);
 
   router.post(
     '/sale/checkout',
@@ -58,6 +58,7 @@ module.exports = (app) => {
   );
 
   router.get('/sale/history', checkAuth, saleContoller.history);
+  router.get('/sale/:id', checkAuth, saleContoller.detail);
 
   app.use(router);
 };

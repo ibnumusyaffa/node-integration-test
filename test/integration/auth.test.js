@@ -29,7 +29,6 @@ describe('Auth', () => {
   });
 
   after(async () => {
-    // delete the test user
     await knex('users').where({ email: user.email }).del();
   });
 

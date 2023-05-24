@@ -1,16 +1,16 @@
 const request = require('supertest');
-const app = require('../../app/app');
+const app = require('../../../app/app');
 const assert = require('chai').assert;
-const knex = require('../../app/db');
+const knex = require('../../../app/db');
 const { faker } = require('@faker-js/faker');
-const { assertDbHasOne, assertDbHas, assertDbMissing } = require('../util/db');
-const { createToken } = require('../util/auth');
+const { assertDbHasOne, assertDbHas, assertDbMissing } = require('../../util/db');
+const { createToken } = require('../../util/auth');
 
-describe('CRUD user', () => {
-  describe('GET /user', () => {
+describe('/admin/user', () => {
+  describe('GET /admin/user', () => {
     it('returns a list of users', async () => {
       const res = await request(app)
-        .get('/user')
+        .get('/admin/user')
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         });
@@ -36,7 +36,7 @@ describe('CRUD user', () => {
       };
       await knex('users').insert(insertedUser);
       const res = await request(app)
-        .get('/user')
+        .get('/admin/user')
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         })
@@ -51,7 +51,7 @@ describe('CRUD user', () => {
     });
   });
 
-  describe('POST /user', () => {
+  describe('POST /admin/user', () => {
     it('should create a new user with valid data', async () => {
       //prepare data
       const body = {
@@ -63,7 +63,7 @@ describe('CRUD user', () => {
 
       //send data
       const res = await request(app)
-        .post('/user')
+        .post('/admin/user')
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         })
@@ -92,7 +92,7 @@ describe('CRUD user', () => {
 
       // send data
       const res = await request(app)
-        .post('/user')
+        .post('/admin/user')
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         })
@@ -111,7 +111,7 @@ describe('CRUD user', () => {
       // send data
       const email = faker.internet.email();
       const res = await request(app)
-        .post('/user')
+        .post('/admin/user')
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         })
@@ -132,7 +132,7 @@ describe('CRUD user', () => {
     });
   });
 
-  describe('PUT /user', () => {
+  describe('PUT /admin/user', () => {
     it('should update a new user with valid data', async () => {
       //prepare data
       const body = {
@@ -151,7 +151,7 @@ describe('CRUD user', () => {
         role_id: 2,
       };
       const res = await request(app)
-        .put(`/user/${id}`)
+        .put(`/admin/user/${id}`)
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         })
@@ -167,7 +167,7 @@ describe('CRUD user', () => {
     });
   });
 
-  describe('GET /user/:id', () => {
+  describe('GET /admin/user/:id', () => {
     it('should return user with given id', async () => {
       //prepare data
       const insertedUser = {
@@ -180,7 +180,7 @@ describe('CRUD user', () => {
       };
       const [id] = await knex('users').insert(insertedUser);
       const res = await request(app)
-        .get(`/user/${id}`)
+        .get(`/admin/user/${id}`)
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         });
@@ -191,7 +191,7 @@ describe('CRUD user', () => {
 
     it('should return an error if user does not exist', async () => {
       const res = await request(app)
-        .get('/user/9999')
+        .get('/admin/user/9999')
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         });
@@ -200,7 +200,7 @@ describe('CRUD user', () => {
     });
   });
 
-  describe('DELETE /user', () => {
+  describe('DELETE /admin/user', () => {
     it('should delete a user', async () => {
       //prepare data
       const insertedUser = {
@@ -213,7 +213,7 @@ describe('CRUD user', () => {
       };
       const [id] = await knex('users').insert(insertedUser);
       const res = await request(app)
-        .delete(`/user/${id}`)
+        .delete(`/admin/user/${id}`)
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         });
@@ -228,7 +228,7 @@ describe('CRUD user', () => {
 
     it('should return an error if user does not exist', async () => {
       const res = await request(app)
-        .delete('/user/9999')
+        .delete('/admin/user/9999')
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         });

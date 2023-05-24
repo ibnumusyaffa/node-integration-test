@@ -1,4 +1,4 @@
-const Product = require('../db/product');
+const Product = require('../../db/product');
 
 exports.list = async (req, res, next) => {
   try {
