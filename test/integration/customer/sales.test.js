@@ -102,6 +102,101 @@ describe('/sales', () => {
       expect(res.status).to.equal(422);
       expect(res.body).to.have.property('errors');
     });
+
+    it('should return validation errors for insufficient stock', async () => {
+      // Create a test product
+      const product = {
+        name: 'Test Product',
+        description: 'A test product',
+        price: 9.99,
+        stock: 1, // Set stock to 1 for testing insufficient stock scenario
+      };
+      const [productId] = await knex('products').insert(product);
+
+      // Define the checkout payload
+      const payload = {
+        products: [
+          {
+            id: productId,
+            quantity: 2, // Requesting 2 quantities while stock is only 1
+          },
+        ],
+      };
+
+      // Send the checkout request
+      const initialCount = await knex('sales').count('* as count').first();
+      const res = await request(app)
+        .post('/sale/checkout')
+        .auth(createToken('admin@example.com'), { type: 'bearer' })
+        .send(payload);
+
+      // Check the response
+      expect(res.status).to.equal(422);
+      expect(res.body).to.have.property(
+        'message',
+        'Insufficient stock for a product'
+      );
+
+      //check sales table not increased
+      const updatedCount = await knex('sales').count('* as count').first();
+      expect(updatedCount.count).to.equal(initialCount.count);
+
+      // Check that the product stock remains unchanged
+      const updatedProduct = await knex('products')
+        .where('id', productId)
+        .select('stock')
+        .first();
+      expect(updatedProduct).to.exist;
+      expect(updatedProduct.stock).to.equal(1); // Stock should remain at 1
+    });
+
+    it('should handle concurrent checkout without race condition', async function () {
+      this.timeout(10000); // Increase the timeout for the test
+
+      // Create a test product
+      const product = {
+        name: 'Test Product',
+        description: 'A test product',
+        price: 9.99,
+        stock: 1, // Set stock to 1 for testing insufficient stock scenario
+      };
+      const [productId] = await knex('products').insert(product);
+
+      // Define the checkout payload
+      const payload = {
+        products: [
+          {
+            id: productId,
+            quantity: 1,
+          },
+        ],
+      };
+
+      const checkoutPromises = [];
+
+
+      const concurrentUsers = 5;
+      // Concurrently initiate checkout requests by multiple users
+      for (let i = 0; i < concurrentUsers; i++) {
+        const checkoutPromise = request(app)
+          .post('/sale/checkout')
+          .auth(createToken('admin@example.com'), { type: 'bearer' })
+          .send(payload);
+        checkoutPromises.push(checkoutPromise);
+      }
+
+      // Wait for all checkout requests to complete
+      const checkoutResults = await Promise.all(checkoutPromises);
+
+      // Check the results
+      expect(checkoutResults).to.have.lengthOf(concurrentUsers);
+
+      // Check the final stock of the product
+      const finalProduct = await knex('products')
+        .where('id', productId)
+        .first();
+      expect(finalProduct.stock).to.equal(0);
+    });
   });
 
   describe('GET /sales/history', () => {

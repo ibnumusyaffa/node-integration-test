@@ -1,8 +1,9 @@
 const Sale = require('../../db/sale');
 const SaleProduct = require('../../db/sale_product');
 const Product = require('../../db/product');
-
+const { Model } = require('objection');
 exports.checkout = async (req, res, next) => {
+  const trx = await Model.startTransaction();
   try {
     const { products } = req.body;
 
@@ -10,13 +11,23 @@ exports.checkout = async (req, res, next) => {
     let totalPrice = 0;
     for (const product of products) {
       const { id, quantity } = product;
-      const foundProduct = await Product.query().findById(id);
+      const foundProduct = await Product.query(trx).findById(id).forUpdate();
       if (!foundProduct) {
+        await trx.rollback();
         return res.status(422).json({ message: 'Product not found' });
+      }
+      if (foundProduct.stock < quantity) {
+        await trx.rollback();
+        return res
+          .status(422)
+          .json({ message: 'Insufficient stock for a product' });
       }
       totalPrice += foundProduct.price * quantity;
 
-      await Product.query().findById(id).decrement('stock', quantity);
+      await Product.query(trx)
+        .findById(id)
+        .forUpdate()
+        .decrement('stock', quantity);
     }
 
     // Create a new sale
@@ -35,13 +46,16 @@ exports.checkout = async (req, res, next) => {
         quantity: quantity,
       });
     }
-    await SaleProduct.query().insertGraph(saleProducts);
+    await SaleProduct.query(trx).insertGraph(saleProducts);
+
+    await trx.commit();
 
     return res.json({
       message: 'Checkout successful',
       saleId: sale.id,
     });
   } catch (error) {
+    await trx.rollback();
     return next(error);
   }
 };
@@ -87,7 +101,6 @@ exports.detail = async (req, res, next) => {
       .findById(saleId)
       .where('user_id', userId)
       .withGraphFetched('[products]');
-      
 
     if (!sale) {
       return res.status(404).json({ message: 'Sale not found' });
