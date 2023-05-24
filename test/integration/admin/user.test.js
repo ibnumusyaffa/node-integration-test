@@ -3,9 +3,9 @@ const app = require('../../../app/app');
 const assert = require('chai').assert;
 const knex = require('../../../app/db');
 const { faker } = require('@faker-js/faker');
-const { assertDbHasOne, assertDbHas, assertDbMissing } = require('../../util/db');
+const { assertDbHasOne, assertDbMissing } = require('../../util/db');
 const { createToken } = require('../../util/auth');
-
+const userBuilder = require('../../factory/user');
 describe('/admin/user', () => {
   describe('GET /admin/user', () => {
     it('returns a list of users', async () => {
@@ -26,14 +26,7 @@ describe('/admin/user', () => {
 
     it('returns a filtered list of users with email paramater', async () => {
       //prepare data
-      const insertedUser = {
-        email: faker.internet.email(),
-        fullname: faker.name.fullName(),
-        role_id: 1,
-        password: '',
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
+      const insertedUser = userBuilder.one();
       await knex('users').insert(insertedUser);
       const res = await request(app)
         .get('/admin/user')
@@ -63,12 +56,7 @@ describe('/admin/user', () => {
   describe('POST /admin/user', () => {
     it('should create a new user with valid data', async () => {
       //prepare data
-      const body = {
-        email: faker.internet.email(),
-        fullname: faker.name.fullName(),
-        role_id: 1,
-        password: 'password123',
-      };
+      const body = userBuilder.one();
 
       //send data
       const res = await request(app)
@@ -76,27 +64,20 @@ describe('/admin/user', () => {
         .auth(createToken('admin@example.com'), {
           type: 'bearer',
         })
-        .send(body);
+        .send({ ...body, password: 'password' });
       //check if status code is 200
       assert.equal(res.statusCode, 200);
 
       await assertDbHasOne('users', {
         email: body.email,
-        role_id: 1,
+        role_id: body.role_id,
         fullname: body.fullname,
       });
     });
 
     it('should return an error if email is already in use', async () => {
       //prepare data
-      const insertedUser = {
-        email: faker.internet.email(),
-        fullname: faker.name.fullName(),
-        password: '',
-        role_id: 1,
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
+      const insertedUser = userBuilder.one();
       await knex('users').insert(insertedUser);
 
       // send data
@@ -153,14 +134,7 @@ describe('/admin/user', () => {
   describe('PUT /admin/user', () => {
     it('should update a new user with valid data', async () => {
       //prepare data
-      const body = {
-        email: faker.internet.email(),
-        fullname: faker.name.fullName(),
-        password: '',
-        role_id: 1,
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
+      const body = userBuilder.one();
       let [id] = await knex('users').insert(body);
 
       const newData = {
@@ -197,14 +171,7 @@ describe('/admin/user', () => {
   describe('GET /admin/user/:id', () => {
     it('should return user with given id', async () => {
       //prepare data
-      const insertedUser = {
-        email: faker.internet.email(),
-        fullname: faker.name.fullName(),
-        password: '',
-        role_id: 1,
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
+      const insertedUser = userBuilder.one();
       const [id] = await knex('users').insert(insertedUser);
       const res = await request(app)
         .get(`/admin/user/${id}`)
@@ -239,14 +206,7 @@ describe('/admin/user', () => {
   describe('DELETE /admin/user', () => {
     it('should delete a user', async () => {
       //prepare data
-      const insertedUser = {
-        email: faker.internet.email(),
-        fullname: faker.name.fullName(),
-        password: '',
-        role_id: 1,
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
+      const insertedUser = userBuilder.one();
       const [id] = await knex('users').insert(insertedUser);
       const res = await request(app)
         .delete(`/admin/user/${id}`)
