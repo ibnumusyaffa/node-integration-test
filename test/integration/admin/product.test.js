@@ -8,9 +8,7 @@ const { createToken } = require('../../util/auth');
 const productBuilder = require('../../factory/product');
 
 describe('/admin/product', () => {
-  before(() => {
-    console.log('beforeAll');
-  });
+
   describe('GET /admin/product', () => {
     it('returns a list of products', async () => {
       const insertedProduct = productBuilder.many(100);
