@@ -1,5 +1,5 @@
 
-Integration testing
+# Integration testing
 
 code example
 https://gitlab.badr.co.id/badr-interactive/node-integration-test-example
@@ -8,7 +8,7 @@ https://gitlab.badr.co.id/badr-interactive/node-integration-test-example
 - unit test : test function/class secara independet, tanpa akses io (network,database, filesystem)
 - integration test (network, database,)
 - end to end testing : test dengan real UI dan real browser
-
+  
 # Why Testing 
 pros
 + Reduce bugs, test case lebih rapi
@@ -21,10 +21,16 @@ cons
 
 - Perlu investasi waktu buat nulis testing
 
+
+
+
 # Apa yang perlu ditest (integration)
-- validasi parameter/body yang dikirim, secara tipe data & bisnis prosesnya
-- response api nya 
-- state didatabase
+- parameter/body yang dikirim
+   - secara tipe data
+   - proses bisnisnya, misal paramater stok tidak boleh lebih dari stok yang available
+- authorization (sudah login atau belum, role permissions)
+- response api (body, status)
+- persistent state (mysql, redis, filesystem etc)
 
 
 # Tools
@@ -32,12 +38,3 @@ cons
 - Supertest - http test
 - chai - assertion library
 - knex - buat check database
-
-# Action Plan
-- Research lebih lanjut test case yang lebih sulit (harusnya ga lama)
-  - integrasi 3rd party api (misal midtrans), 
-  - kirim email, 
-  - upload files, 
-  - integrasi ke dependency tambahan misal redis/minio
-- Sharing ke knowlede rekan lain
-- Review code, apa cara ngetestnya sama test-test casenya udah bagus apa belum

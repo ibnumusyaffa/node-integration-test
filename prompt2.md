@@ -1,4 +1,4 @@
-generate test for checkout api with test case : Invalid Product ID
+generate test for checkout api with test case : success checkout with valid data
 
 POST /checkout
 Body  
@@ -17,46 +17,50 @@ Body
 
 with example like this
 
-```javascript
+```js
+
 const request = require('supertest');
 const app = require('../../../app/app');
 const assert = require('chai').assert;
 const knex = require('../../../app/db');
-
-const { assertDbHasOne, assertDbMissing } = require('../../util/db');
 const { createToken } = require('../../util/auth');
-const productBuilder = require('../../factory/product');
 
-describe('/admin/product', () => {
-  describe('POST /admin/product', () => {
-    it('should create a new product with valid data', async () => {
-      // Prepare data
-      const body = productBuilder.one();
+describe('PUT /admin/product', () => {
+  it('should update a product with valid data', async () => {
+    // Prepare data
+    const insertedProduct = {
+      name: "random product",
+      description: "random description",
+      price: 100,
+      stock: 5,
+    }
 
-      // Send data
-      const res = await request(app)
-        .post('/admin/product')
-        .auth(createToken('admin@example.com'), { type: 'bearer' })
-        .send(body);
-      // Check if status code is 200
-      assert.equal(res.statusCode, 200);
+    const [productId] = await knex('products').insert(insertedProduct);
 
-      await assertDbHasOne('products', {
-        name: body.name,
-        description: body.description,
-        price: body.price,
-        stock: body.stock,
-      });
-    });
-    it('returns a 403 error for a non-admin user', async () => {
-      const res = await request(app)
-        .post('/admin/product')
-        .auth(createToken('customer@example.com'), { type: 'bearer' })
-        .expect(403);
+    const newData = {
+      name: "update product",
+      description: "update description",
+      price: 99,
+      stock: 1
+    }
 
-      assert.equal(res.body.message, 'Access denied');
-    });
+    const res = await request(app)
+      .put(`/admin/product/${productId}`)
+      .auth(createToken('admin@example.com'), { type: 'bearer' })
+      .send(newData);
+
+    assert.equal(res.statusCode, 200);
+
+
+    const updatedProduct = await knex('products')
+      .where('id', productId)
+      .first();
+
+    assert.equal(updatedProduct.name, newData.name);
+    assert.equal(updatedProduct.description, newData.description);
+    assert.equal(updatedProduct.price, newData.price);
+    assert.equal(updatedProduct.stock, newData.stock);
   });
-});
 
+});
 ```

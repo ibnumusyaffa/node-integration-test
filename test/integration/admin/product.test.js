@@ -8,7 +8,6 @@ const { createToken } = require('../../util/auth');
 const productBuilder = require('../../factory/product');
 
 describe('/admin/product', () => {
-
   describe('GET /admin/product', () => {
     it('returns a list of products', async () => {
       const insertedProduct = productBuilder.many(100);
@@ -105,6 +104,15 @@ describe('/admin/product', () => {
         price: newData.price,
         stock: newData.stock,
       });
+
+      const updatedProduct = await knex('products')
+        .where('id', productId)
+        .first();
+
+      assert.equal(updatedProduct.name, newData.name);
+      assert.equal(updatedProduct.description, newData.description);
+      assert.equal(updatedProduct.price, newData.price);
+      assert.equal(updatedProduct.stock, newData.stock);
     });
 
     it('returns a 403 error for a non-admin user', async () => {
