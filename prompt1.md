@@ -1,4 +1,4 @@
-generate all acceptance case for checkout api world only
+generate all acceptance case for checkout api using world only
 
 POST /checkout
 body
