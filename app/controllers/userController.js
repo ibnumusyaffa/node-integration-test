@@ -101,7 +101,7 @@ exports.detail = async (req, res, next) => {
 exports.delete = async (req, res, next) => {
   const id = req.params.id;
   try {
-    const deletedUser = await User.query().where('id', id).del();
+    const deletedUser = await User.query().delete().where('id', id)
 
     if (deletedUser) {
       res.json({ message: 'User deleted successfully' });
