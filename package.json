@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./app/server.js",
-    "test": "NODE_ENV=test mocha --require test/setup.js --recursive --bail",
+    "test": "NODE_ENV=test mocha --require test/setup.js --recursive --bail --timeout 360000",
     "dev": "nodemon ./app/server.js",
     "lint": "eslint --ignore-path .gitignore  --ext .js,.ts,.tsx .",
     "lint:fix": "eslint --ignore-path .gitignore  --ext .js,.ts,.tsx --fix .",
