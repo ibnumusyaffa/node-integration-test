@@ -1,30 +1,9 @@
 version: '3.9'
 
 services:
-    node:
-        build:
-             context: .
+    interview-api:
+        container_name: interview-api
+        hostname: "interview-api"
+        build: .
         ports:
-            - 3000:3000
-        environment:
-            - NODE_ENV=development
-        volumes:
-            - ./:/app
-        depends_on: 
-            - mysql
-        command: npm run dev
-    mysql:
-        image: mysql
-        env_file: ./.env
-        environment: 
-            MYSQL_ROOT_PASSWORD: "password"
-            MYSQL_DATABASE: node
-        ports:
-            - 3306:3306
-        volumes:
-            - mysql:/var/lib/mysql
-            - mysql_config:/etc/mysql
-
-volumes:
-    mysql:
-    mysql_config:
+            - 7777:3000

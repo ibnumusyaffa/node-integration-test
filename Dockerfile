@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:18-alpine
 ENV NODE_ENV=development
 
 WORKDIR /app
@@ -9,4 +9,4 @@ RUN npm install
 
 COPY . .
 
-CMD ["node","server.js"]
+CMD ["node","./app/server.js"]
