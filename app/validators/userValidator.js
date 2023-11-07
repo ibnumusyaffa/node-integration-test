@@ -1,6 +1,5 @@
 const { body } = require('express-validator');
 const User = require('../db/user');
-const Role = require('../db/user');
 let create = [
   body('email')
     .notEmpty()
@@ -10,15 +9,6 @@ let create = [
 
       if (user) {
         return Promise.reject('Email already in use');
-      }
-      return true;
-    }),
-  body('role_id')
-    .notEmpty()
-    .custom(async (value) => {
-      const user = await Role.query().where('id', value).first();
-      if (!user) {
-        return Promise.reject('role id is not valid');
       }
       return true;
     }),
@@ -38,15 +28,6 @@ let update = [
         .first();
       if (user) {
         return Promise.reject('Email already in use');
-      }
-      return true;
-    }),
-  body('role_id')
-    .notEmpty()
-    .custom(async (value) => {
-      const user = await Role.query().where('id', value).first();
-      if (!user) {
-        return Promise.reject('role id is not valid');
       }
       return true;
     }),

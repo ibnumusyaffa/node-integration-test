@@ -1,4 +1,4 @@
-const User = require('../../db/user');
+const User = require('../db/user');
 const bcrypt = require('bcryptjs');
 
 exports.list = async (req, res, next) => {
@@ -6,12 +6,13 @@ exports.list = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // default page of 1
     const limit = parseInt(req.query.limit) || 10; // default limit of 10
 
-    let result = User.query().withGraphFetched('[role]');
+    let result = User.query();
 
-    if (req.query.email) {
-      const email = `${req.query.email.toLowerCase()}`;
-      result = result.where('email', email);
+    if (req.query.keyword) {
+      const keyword = `%${req.query.keyword.toLowerCase()}%`;
+      result = result.where('fullname', 'like', keyword);
     }
+
     result = await result.orderBy('id', 'desc').page(page - 1, limit);
 
     const meta = {
@@ -34,7 +35,6 @@ exports.create = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const user = {
       email: req.body.email,
-      role_id: req.body.role_id,
       fullname: req.body.fullname,
       password: await bcrypt.hash('password', salt),
     };
@@ -52,7 +52,7 @@ exports.create = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
-    const { email, role_id, fullname, password } = req.body;
+    const { email, fullname, password } = req.body;
     const id = req.params.id;
     // Find the user to update
     const user = await User.query().findById(id);
@@ -65,7 +65,6 @@ exports.update = async (req, res, next) => {
 
     // Update user properties
     user.email = email;
-    user.role_id = role_id;
     user.fullname = fullname;
 
     // Update password if provided
@@ -89,10 +88,7 @@ exports.update = async (req, res, next) => {
 exports.detail = async (req, res, next) => {
   const id = req.params.id;
   try {
-    const user = await User.query()
-      .withGraphFetched('[role]')
-      .where('id', id)
-      .first();
+    const user = await User.query().where('id', id).first();
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
